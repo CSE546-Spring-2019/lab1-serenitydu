@@ -12,7 +12,7 @@ Clean the compiled file:
 To clean the program, type "make clean"
 
 Run program:
-After you compile the program, type "count input_file word_for_search output_file",
+After you compile the program, type "./count input_file word_for_search output_file",
 input_file:         The file you want to search the word
 word_for_search:    The word you want to search
 output_file:        The output file, must be a name different to the input file.
