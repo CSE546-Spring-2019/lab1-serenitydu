@@ -13,11 +13,16 @@ int main(int argc, char *argv[]){
     /* File pointer */
     FILE *inputFile, *outputFile;
     /* size of the file*/
-    int size = 0;
+    long size = 0;
     int wordSize = 0;
     /* count the number of a string appears in the file*/
-    int countWord = 0;
-    int count = 0;
+    long countWord = 0;
+    long count = 0;
+    char* read_begin;
+    int left_word;
+    int left;
+
+    /* These variables are used for KMP algorithm*/
     int i =0, l = -1;
     int m=0, n=0;
     int checkA[20] = {0};
@@ -48,16 +53,28 @@ int main(int argc, char *argv[]){
     fseek(inputFile, 0, SEEK_END);
     size = ftell(inputFile);
     fseek(inputFile, 0, SEEK_SET);
-    printf("Size of file is %d\n", size);
+    printf("Size of file is %ld\n", size);
 
     wordSize = strlen(search);
+    
+    left_word = 0;
+    read_begin = buffer;
 
-    /*Using KMP*/
-    fread(buffer, 1, 100, inputFile);
-    fseek(inputFile, 0, 0);
-    while(!feof(inputFile)){
-        
-        //find nextf
+    while(1){
+		read_begin= buffer+left_word;
+		memset(read_begin,'\0',sizeof(buffer)-left_word);
+
+		count=fread(read_begin,sizeof(char),sizeof(buffer)-left_word-1,inputFile);
+
+        if(count <=0){
+			break;
+		}
+
+        //printf("%s\n",buffer);
+
+        /*KMP Algorithm to search words*/
+
+		/*find next*/
         checkA[0] = -1;
         while (i < wordSize -1){
             if (l==-1||search[i] == search[l]){
@@ -69,10 +86,11 @@ int main(int argc, char *argv[]){
                 l = checkA[l];  
             }
         }
-        //check match
+        /*check match*/
         while (m < 100){
             if (n==-1||buffer[m] == search[n]){
-                m++; n++;
+                m++;
+                n++;
             }
             else{
                 n = checkA[n];
@@ -83,20 +101,26 @@ int main(int argc, char *argv[]){
                 m -= wordSize-1;
             }
         }
-        fseek(inputFile,(100-wordSize),(100-wordSize)*count);
-        fread(buffer, 1, 100, inputFile);
-        count++;
         i =0;
         l = -1;
         m=0;
         n=0;
-        //printf("%s\n", buffer);
-    }
-    printf("Number of matches = %d\n", countWord);
+        /* End of KMP*/
+
+		if((left_word + count)<(wordSize-1)){
+			break;
+		}else{
+			left = wordSize-1;
+			strncpy(buffer,&buffer[count+left_word-left],left);
+			left_word=left;
+		}
+	}
+
+    printf("Number of matches = %ld\n", countWord);
 
     /* Print output to the file.*/
-    fprintf(outputFile, "Size of file is %d\n", size);
-    fprintf(outputFile, "Number of matches = %d\n", countWord);
+    fprintf(outputFile, "Size of file is %ld\n", size);
+    fprintf(outputFile, "Number of matches = %ld\n", countWord);
 
     /* Close all the file*/
     fclose(inputFile);
